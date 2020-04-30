@@ -1,0 +1,9 @@
+[submodule "trajectory-smoothing"]
+	path = trajectory-smoothing
+	url = https://github.com/Joechencc/EECS-568-FInal-Project-code.git
+[submodule "invariant-ekf"]
+	path = invariant-ekf
+	url = https://github.com/kevinhangoat/Left-Invariant-EKF-SLAM.git
+[submodule "incremental-slam-and-loop-closure"]
+	path = incremental-slam-and-loop-closure
+	url = https://github.com/Gregory-Meyer/csv-slam.git
