@@ -1,0 +1,64 @@
+\documentclass[journal]{IEEEtran}
+
+% Add more packages here that you need!
+\usepackage{graphicx} 
+\usepackage[margin=1in]{geometry} 
+\usepackage{amsmath,amsthm,amssymb}
+\usepackage[noend]{algpseudocode}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage{mathrsfs}
+\usepackage{booktabs}
+\usepackage[nodisplayskipstretch]{setspace}
+\usepackage{hyperref}
+\setstretch{1}
+\setlength{\abovedisplayskip}{0em}
+\setlength{\belowdisplayskip}{0.5em}
+\makeatletter
+\def\BState{\State\hskip-\ALG@thistlm}
+\makeatother
+
+\usepackage{color}
+\usepackage{pdfpages}
+\usepackage{subcaption}
+\usepackage[font=small,labelfont=bf]{caption}
+
+
+\newcommand{\link}[2]{\href{#1}{\color{blue} \underline{\smash{#2}}}}
+
+
+\begin{document}
+\pagenumbering{arabic}
+\def\arraystretch{1.2}
+
+\title{Mobile Robotics WN2020 Team 4 Report}
+\author{Chao Chen, Sumukha Udupa, Yutian Han, Gregory Meyer \\ \{\link{mailto:joecc@umich.edu}{joecc},\link{mailto:sudupa@umich.edu}{sudupa},\link{mailto:kevinyut@umich.edu}{kevinyut},\link{mailto:gregjm@umich.edu}{gregjm}\}@umich.edu}
+\date{2020-04-30}
+
+\maketitle
+\input{subsections/abstract.tex}
+
+\IEEEpeerreviewmaketitle
+
+\section{Introduction}\label{sec:intro}
+\input{subsections/intro.tex}
+
+\section{Methodology}\label{sec:method}
+\input{subsections/Method.tex}
+\input{trajectory_section/Trajectory}
+
+
+\section{Results and Discussion}\label{sec:results}
+\input{subsections/Results.tex}
+
+\section{Conclusion}\label{sec:conclusion}
+\input{subsections/Conclusion.tex}
+
+\section{Presentation and GitHub Repository}
+\link{https://youtu.be/UGMAuZjeV3A}{Video.}  \\
+\link{https://github.com/Gregory-Meyer/mobile-robotics-final-project}{GitHub repository.}
+\bibliographystyle{IEEEtran}
+\bibliography{ref.bib}
+
+\end{document}

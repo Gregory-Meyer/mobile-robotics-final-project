@@ -1,0 +1,19 @@
+\subsection{Trajectory Smoothing}
+Trajectory smoothing method is normally used if the whole dataset is given as a whole. Then the path of the robot can be further optimized using this method. In this section, the focus is on the optimization capability of trajectory smoothing method.
+
+Four different sources of data are used and processed as the prediction and measurement including GPS data, IMU data, Odometry data, and gyro data. In the following discussion, three modifications of the data are discussed including filtering odometry data with gyro data, filting GPS data with IMU data, and filtering odometry data is used as the prediction step and modified GPS data is used for correction measurement.
+
+\subsubsection{Gyrodometry}
+\input{trajectory_section/gyrodometry}\label{sec:gyrodo}
+
+\subsubsection{Odometry Fused with Gyroscope}
+\input{trajectory_section/Odometry-filter}
+
+\subsubsection{GPS Optimization using IMU}
+\input{trajectory_section/GPS-filter}
+
+\subsubsection{Filtered Odometry with Filtered GPS}
+\input{trajectory_section/filter-GPS-Odo}
+
+\subsection{Left Invariant Extended Kalman Filter}
+\input{trajectory_section/InEKF}

@@ -1,0 +1,9 @@
+    Data from 5 different sesors were combined in different combination to implement three different trajectory estimation methods. 
+    %We implemented and compared three different trajectory estimation methods in this project. 5 different kinds of sensors are included and fused, including odometry, gyroscope, GPS, IMU, and lidar. These data are combined in different ways and implemented in three methods mentioned. 
+    From the provided results and the error analysis, all three methods provide an overall satisfactory trajectory. However, the results are not perfect due to the noisy input data which was present even after filtering, as shown in Figure \ref{fig:Final plot} and Figure \ref{fig:complete_IMUGPS_result}, and the three methods have scope for improvement. Thus, the following improvements can be carried out in the future:
+
+\begin{enumerate}
+    \item GPS sensor noise should be reduced to avoid jumpy data, 
+    \item A z-axis correction method should be added to the incremental SLAM implementation to correct drift
+    \item A more accurate method to linearize GPS coordinates to the local x-y plane
+\end{enumerate}

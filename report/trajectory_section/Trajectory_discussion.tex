@@ -1,0 +1,66 @@
+\subsection{Trajectory Smoothing Analysis}
+This section includes the error analysis of trajectory smoothing. The main concentration is on mean error,  end pose error and covariance. Mean error in Table. \ref{tb:Error_Table} represents average mean error in meter at each individual step. End pose error refers to the distance error which is equal to $location_{real}(x,y) - location_{ground truth}(x,y)$ Covariance is the covariance between ground truth position and the estimated position. The detail is given in Table. \ref{tb:Error_Table}.
+
+\begin{table}[h]
+	\captionsetup[table]{position=here}
+    \caption{\label{tb:Error_Table}
+    Error Analysis using Trajectory smoothing
+    } 
+    \begin{center}
+    \resizebox{\linewidth}{!}{
+        \begin{tabular}{c | *3{c}}
+			\toprule
+            Dataset & Mean Error(m) & Average Covariance(m\textsuperscript{2}) & End Pose Error(m) \\
+            \hline
+             $Odometry+Gyro$ & 116.43 & 13783.43 & 154.53  \\
+             $Gyrodometry$ & 125.75 & 16482.48 & 178.49 \\
+             $GPS+IMU$ & 21.41 & 459.02 &79.94 \\
+             $GPS+Odometry$ & 9.14 & 92.41 & 75.95 \\
+			\bottomrule
+        \end{tabular}}
+    \end{center}
+\end{table}
+
+\subsubsection{Analysis about odometry Data}
+Theoretically, gyrodometry should perform better result than pure odometry and odometry + Gyro data. However, Table.\ref{tb:Error_Table} and Figure.\ref{fig:Gyrodometry} show that ``gyro-only" correction methods beats other odometry correction methods. One of the explanation is that the gyro sensor(KVH DSP-3000 single-axis FOG) in NCLT dataset provides highly accurate rotation measurements. Moreover, the gyro data  biased towards the same side as the odometry data, thus gyro cannot aid the correction of the trajectory a lot.
+
+Additionally, even though the shape of the trajectory looks similar to the ground truth, the error accumulates through the entire trajectory, because there is no sensor measurement for correction. Thus, simply using odometry + Gyro data is not ideal method. The next section brings GPS data into discussion for minimizing the bias of the trajectory. 
+
+\subsubsection{Analysis about GPS Data}
+From Figure. \ref{fig:IMU-GPS}, as the GPS data obtained is noisy, lots of overshoots exist in the trajectory. To correct the overshot portion of the trajectory, GPS is preferred to be filtered with IMU data. 
+
+With ISAM2 method, the overshoots can be minimized and filter GPS trajectory can be viewed in Figure. \ref{fig:filteredgps}. To tune a better trajectory, IMU variance value is to set high($\sigma_{angular}$ = 10) on angular direction. Although the filtered GPS trajectory seems to be closer to the ground truth from Table. \ref{tb:Error_Table} and the orientation of the trajectory is about to align with the ground truth, the details of the trajectory is not good enough as the trajectory estimation. Then, to further corrects the trajectory, combing with corrected odometry data would be preferred. 
+
+\subsubsection{Analysis about GPS + Odometry Data}
+The filtered Odometry data are used to create graph and filted GPS data are added as factors such that by tuning the covariance values, the trajectory can be further optimized and obtained in Figure. \ref{fig:Final plot}. The strategy to tune a better trajectory is to set sigma large($\sigma_{linear}$ = 100) on linear direction and set low sigma value ($\sigma_{angular}$ = 0.3) on angular direction.
+
+Overall, the filtered data using modified odometry and modified GPS shows the best result among all method in Table. \ref{tb:Error_Table}. However, the filtered trajectory looks bad when the robot drives in a complicated manner shown in Figure \ref{fig:Final plot} (the details of the trajectory is messy). In contrast, the overall filtered trajectory is a good represent of the location of robot when it moves in a relatively simple minor, like driving in a straight line or doing some square movement. One of the possible reason is that the GPS is noisy when the robot performs continuous turning in a short amount of time such that the GPS data cannot be updated correctly.
+
+% To do: edit the latex structure
+
+\subsection{Left-InEKF Analysis}
+
+This section examines the result from the Left-InEKF. By comparing the result with the given ground truth, error analysis is performed and presented in Table \ref{tb:Error_Table_2}.
+
+\begin{table}[h]
+	\captionsetup[table]{position=here}
+    \caption{\label{tb:Error_Table_2}
+    Error Analysis for Left-InEKF
+    } 
+    \begin{center}
+    \resizebox{\linewidth}{!}{
+        \begin{tabular}{c | *3{c}}
+			\toprule
+            Dataset & Mean Error(m) & Average Covariance(m\textsuperscript{2}) & End Pose Error(m) \\
+            \hline
+             $GPS+IMU InEKF$ & 95.32 & 8801.55 &109.94 \\
+			\bottomrule
+        \end{tabular}}
+    \end{center}
+\end{table}
+
+In comparison with the trajectory smoothing output using GPS and IMU (Table \ref{tb:Error_Table}), the InEKF estimation has approximately 10\% larger error. As shown in Figure \ref{fig:complete_IMUGPS_result}, the estimation is the most accurate at the beginning of the data collection, starting at the origin. However, it gradually deviates away from the ground truth, despite of the general shapes of the two plots being similar. 
+
+The error may have been caused by the following reasons. First, the covariance is not well tuned for the filter. If a larger sigma is assigned to the input and observation, a more accurate estimation will be obtained. Second, the GPS data is rather jumpy as shown in Figure \ref{fig:IMU-GPS}. If the GPS measurement is smoothed before inputting into the filter, the result could have been be better. In addition, the overall size of the estimated trajectory is larger than that of the ground truth, which indicates a probable system error in the calculation to transform the latitude and longitude to the x-y location. Lastly, when the IMU dataset was re-sampled, a 5\% time difference was generated between the IMU and GPS measurements. The goal of resampling was to ensure a same number of prediction and correction steps in the algorithm. A more complete method is to utilize the full length of the IMU data and only perform the correction when a GPS measurement is made. 
+
+In general, the Left-InEKF produces a better result than the IMU-only or GPS-only position estimation. The filter can be improved by addressing the three issues mentioned above. 

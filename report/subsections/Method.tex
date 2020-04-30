@@ -1,0 +1,31 @@
+\subsection{Incremental SLAM and Loop Closure}
+
+Incremental SLAM is normally used for online applications where the robot must continually estimate its pose while it is operating. In this section, the focus is on using online incremental lidar SLAM and loop closure to optimize the trajectory of the Segway. Cartographer\cite{cartographer}, an open-source library, is used to provide the base implementation for online SLAM. The implementation fuses measurements from the HDL-32E, wheel odometry, IMU, and FOG.
+
+\subsubsection{Cartographer Overview}
+
+Cartographer performs local SLAM via scan-to-submap matching with the Ceres\cite{ceres} nonlinear optimization library. Lidar scans are accumulated into fixed-size submaps (voxel grids in 3D or pixel grids in 2D), where new scans are inserted into the submap by minimizing the cost of introducing that scan into the submap, normalized by the magnitude of translation and rotation. The initial guess for the scan's alignment into the submap is formed by integrating odometry and IMU measurements observed since the last lidar measurement. Once a submap has accumulated a certain number of scans, it is marked as finalized and inserted into a pose graph for global SLAM. A subset of lidar measurements are also inserted directly into the pose graph.
+
+Global SLAM is accomplished by optimizing the sparse pose graph of lidar measurements and submaps to jointly determine the pose of all lidar measurements and submaps. A lidar measurement should have a suitably high score when scan matched with a nearby submap, the relative pose between the two is added to the optimization problem. Adding constraints to ensure the alignment of submaps and lidar measurements increases the accuracy of the resulting trajectory in the case of loop closures.
+
+Notably, Cartographer does not incorporate or estimate covariances for the output trajectory.
+
+\subsubsection{Data Sources}
+
+The input is fused from the Velodyne HDL-32E lidar, wheel odometry, the IMU, and the FOG. The raw Velodyne packets were transformed into a coordinate frame colocated with the original frame, but rotated so that its x-, y-, and z-axes are aligned with that of the IMU. We used the fused output of an Extended Kalman Filter which took the wheel odometry, IMU, and FOG as inputs as our odometry input to Cartographer; this output was provided by the authors of the NCLT dataset. Also, raw IMU data is directly inputted to Cartographer to increase the accuracy of its initial guess for scan-to-scan rotational alignment.
+
+% TODO: test with the InEKF filtered input instead?
+
+\subsubsection{Dimensionality}
+
+Cartographer is tested in both 2D and 3D mode. 3D mode is particularly sensitive to the accuracy of the coordinate frame transform between the IMU and the lidar, while the flattening behavior used for 2D mode permits more leeway in the alignment between the two. The authors of the NCLT dataset have included an accurate transform between the two coordinate frames, computed by jointly optimizing for the SLAM problem and the alignment of the lidar. Applications, where the angular error of the IMU-to-lidar coordinate frame transform is on the magnitude of a degree or more are likely to see a poor performance if they attempt to use Cartographer for 3D SLAM.
+
+\subsubsection{Local SLAM Tuning}
+
+Local SLAM is tuned primarily by modifying the cost of modifying linear and rotational translation from the initial guess. Our group tested several combinations of increasing and decreasing the linear and rotational weight relative to the default values.
+
+\subsubsection{Implementation}
+
+this part of the project is implemented in C++17, using Cartographer's C++ interface. Arbitrary runs from the NCLT dataset can be provided as input, and output is emitted as a CSV file in the same format as the ground truth data provided by the NCLT dataset. As Cartographer does not support covariance estimation for the optimized trajectory, no covariance is output. Odometry data may optionally be provided; users should take care to use the 100Hz odometry computed relative to the initial pose of the robot, not the odometry computed relative to the last odometric pose. CMake 3.11 or newer is used as a metabuild system. Additionally, Cartographer, Boost 1.58 or newer (including the iostreams component), and Eigen 3 are build-time dependencies.
+
+A Python wrapper script is provided with the implementation. This script automates building and running the C++ part of the project similar to Rust's \texttt{cargo} package management utility. Further usage information can be obtained by running \texttt{python csv\_slam.py --help}. Subcommands also support the \texttt{-h,--help} option to emit help text.

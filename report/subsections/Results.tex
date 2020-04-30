@@ -1,0 +1,77 @@
+\subsection{Incremental SLAM and Loop Closure}
+
+To evaluate the performance of Cartographer, we ran it using the 2012-11-16 run of the NCLT dataset as input. Plots are of the trajectory from the 11 to 13 minute mark from the start of the dataset. The provided ground truth, odometry, and Cartographer operating in 2D and 3D mode are compared. Note that this section evaluates error over a 2 minute long loop, rather than 20 seconds of operation while turning.
+
+We found that for our dataset, we had to assign a high weight to rotation and translation changes in the optimizer, exactly two orders of magnitude greater than the default settings. Higher weights correspond to increased trust in the prior provided by IMU and odometry measurements, meaning that the result of scan-to-submap matching was more likely to introduce error to the output trajectory than the odometry and IMU priors.
+
+Compared to the trajectory smoothing and InEKF approaches, Cartographer's scan-to-submap matching accumulates an order of magnitude less error over 2 minutes than the incremental methods accumulate over 20 seconds. See Table \ref{tb:cartographer-3d-error-table}, Table \ref{tb:cartographer-2d-error-table}, and Table \ref{tb:Error_Table}. However, there is a significant amount of z-axis drift introduced when running Cartographer in 3D mode. This drift is corrected by global optimization at the 56 and 84 second marks, but z-axis error continues to accumulate at about 2 meters per minute. This can be partially remedied by locking the roll and pitch during scan matching, which we have done, but without another method of minimizing z-axis error, it will accumulate enough to prevent larger loops from being closed. Alternatively, additional sensors can be integrated into the optimization problem to correct z-axis error. The Segway also includes data from two Hokuyo lidars, one mounted in a push-broom configuration facing the ground and the other mounted facing forward. The ground-facing lidar could be incorporated into the scan matching algorithm so that tracking the ground is incorporated into the algorithm. Finally, altitude estimates could be integrated from one of the GPS receivers as fixed-frame reference points.
+
+While 2D mode was not prone to accumulating z-axis drift like 3D mode, it was significantly more likely to experience runtime errors (segfaults and assertion failures). Most of Cartographer's development has been focused on optimizing for the 3D use-case, so it's likely that these bugs have gone unnoticed because most applications use the 3D trajectory builder interface.
+
+\begin{table}[h]
+	\captionsetup[table]{position=here}
+    \caption{\label{tb:cartographer-3d-error-table}
+    3D Error Analysis using Cartographer
+    }
+    \begin{center}
+    \resizebox{\linewidth}{!}{
+        \begin{tabular}{c | *2{c}}
+			\toprule
+            Dataset & Mean 3D Pose Error (m) & End 3D Pose Error (m) \\
+            \hline
+             Odometry Only & 1.09 & 1.73 \\
+             Cartographer 3D & 3.16 & 7.34 \\
+             Cartographer 2D & 1.87 & 4.97 \\
+			\bottomrule
+        \end{tabular}}
+    \end{center}
+\end{table}
+
+\begin{table}[h]
+	\captionsetup[table]{position=here}
+    \caption{\label{tb:cartographer-2d-error-table}
+    2D Error Analysis using Cartographer
+    }
+    \begin{center}
+    \resizebox{\linewidth}{!}{
+        \begin{tabular}{c | *2{c}}
+			\toprule
+            Dataset & Mean 2D Pose Error (m) & End 2D Pose Error (m) \\
+            \hline
+             Odometry Only & 1.06 & 1.69 \\
+             Cartographer 3D & 2.02 & 5.89 \\
+             Cartographer 2D & 1.85 & 4.96 \\
+			\bottomrule
+        \end{tabular}}
+    \end{center}
+\end{table}
+
+\begin{figure}[hbt!]
+    \centering
+    \includegraphics[width = 0.8\linewidth]{media/cartographer/error-top.png}
+    \caption{\textit{x-y view of optimized trajectories.}}
+    \label{fig:cartographer-xy}
+\end{figure}
+
+\begin{figure}[hbt!]
+    \centering
+    \includegraphics[width = 0.8\linewidth]{media/cartographer/error-side.png}
+    \caption{\textit{x-z view of optimized trajectories.}}
+    \label{fig:cartographer-xz}
+\end{figure}
+
+\begin{figure}[hbt!]
+    \centering
+    \includegraphics[width = 0.8\linewidth]{media/cartographer/3d-translation-error.png}
+    \caption{\textit{3D translation error.}}
+    \label{fig:cartographer-3d-error}
+\end{figure}
+
+\begin{figure}[hbt!]
+    \centering
+    \includegraphics[width = 0.8\linewidth]{media/cartographer/2d-translation-error.png}
+    \caption{\textit{2D translation error.}}
+    \label{fig:cartographer-2d-error}
+\end{figure}
+
+\input{trajectory_section/Trajectory_discussion}
